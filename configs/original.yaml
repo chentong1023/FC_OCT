@@ -1,0 +1,41 @@
+DATASET:
+  TRAIN:
+    TYPE: 'Mscoco'
+    ROOT: './data/coco/'
+    IMG_PREFIX: 'train2017'
+    ANN: 'annotations/person_keypoints_train2017.json'
+    AUG:
+      FLIP: true
+      ROT_FACTOR: 40
+      SCALE_FACTOR: 0.3
+      NUM_JOINTS_HALF_BODY: 8
+      PROB_HALF_BODY: -1
+  VAL:
+    TYPE: 'Mscoco'
+    ROOT: './data/coco/'
+    IMG_PREFIX: 'val2017'
+    ANN: 'annotations/person_keypoints_val2017.json'
+  TEST:
+    TYPE: 'Mscoco_det'
+    ROOT: './data/coco/'
+    IMG_PREFIX: 'val2017'
+    DET_FILE: './exp/json/test_det_rcnn.json'
+    ANN: 'annotations/person_keypoints_val2017.json'
+DATA_PRESET:
+  NORM_TYPE: 'gumbel_softmax'
+  IMAGE_SIZE:
+  - 256
+  - 192
+  HEATMAP_SIZE:
+  - 64
+  - 48
+TRAIN:
+  BATCH_SIZE: 32
+  BEGIN_EPOCH: 0
+  END_EPOCH: 200
+  OPTIMIZER: 'adam'
+  LR: 0.001
+  LR_FACTOR: 0.1
+  LR_STEP:
+  - 90
+  - 120
