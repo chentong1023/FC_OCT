@@ -13,6 +13,7 @@ from utils.opt import cfg, logger, opt
 from utils.metrics import NullWriter
 from trainer import train, validate
 from model.fcoct import fcoct
+from utils.dataset import Hc
 from tensorboardX import SummaryWriter
 
 def _init_fn(worker_id):
@@ -60,7 +61,7 @@ def main():
 
     m.cuda()
 
-    criterion = builder.build_loss().cuda()
+    criterion = SummaryLoss.cuda()
 
     if cfg.TRAIN.OPTIMIZER == 'adam':
         optimizer = torch.optim.Adam(m.parameters(), lr=cfg.TRAIN.LR)
@@ -75,7 +76,7 @@ def main():
     else:
         writer = None
 
-    train_dataset = builder.build_dataset()
+    train_dataset = Hc(cfg.TRAIN, train=True)
     
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=(train_sampler is None), worker_init_fn=_init_fn)
@@ -100,14 +101,14 @@ def main():
             # Save checkpoint
             if opt.log:
                 torch.save(m.module.state_dict(), './exp/{}-{}/model_{}.pth'.format(opt.exp_id, cfg.FILE_NAME, opt.epoch))
-            # Prediction Test
-            with torch.no_grad():
-				err = validate(m, opt, cfg)
-				if opt.log and err <= best_err:
-					best_err = err
-					torch.save(m.module.state_dict(), './exp/{}-{}/best_model.pth'.format(opt.exp_id, cfg.FILE_NAME))
+            # TODO: Prediction Test
+            # with torch.no_grad():
+			# 	err = validate(m, opt, cfg)
+			# 	if opt.log and err <= best_err:
+			# 		best_err = err
+			# 		torch.save(m.module.state_dict(), './exp/{}-{}/best_model.pth'.format(opt.exp_id, cfg.FILE_NAME))
 
-				logger.info(f'##### Epoch {opt.epoch} | gt results: {err}/{best_err} #####')
+			# 	logger.info(f'##### Epoch {opt.epoch} | gt results: {err}/{best_err} #####')
 
 if __name__ == "__main__":
     main()

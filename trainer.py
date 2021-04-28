@@ -24,8 +24,13 @@ def train(opt, cfg, train_loader, m, criterion, optimizer, writer):
 		
 		loss = criterion(output, labels)
 		
-		# acc = calc_accuracy(output, labels)
+		batch_size = inps.shape[0]
+		
+		# TODO: acc = calc_accuracy(output, labels)
 		acc = 0
+		
+		loss_logger.update(loss.item(), batch_size)
+		acc_logger.update(acc, batch_size)
 		
 		optimizer.zero_grad()
 		loss.backward()
