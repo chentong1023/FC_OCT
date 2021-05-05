@@ -2,7 +2,7 @@ import os
 import json
 import numpy as np
 
-def json_output(indxs, filename):
+def json_output(indxs, json_name):
 	data = []
 	for idx in indxs:
 		for frame in range(1, 12):
@@ -18,9 +18,10 @@ def json_output(indxs, filename):
 				'bds' : bds,
 				'mask' : mask
 			}
+			# print(np.array(bds).shape) (8, 768)
 			data.append(ann)
 	
-	json_path = os.path.join(label_path, filename)
+	json_path = os.path.join(label_path, json_name)
 	with open(json_path, 'w') as f:
 		f.write(json.dumps(data))
 

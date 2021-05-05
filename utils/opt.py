@@ -9,7 +9,7 @@ from types import MethodType
 
 import torch
 
-from .utils.config import update_config
+from utils.config import update_config
 
 parser = argparse.ArgumentParser(description='Fully Convolutional Boundary Regression for Retina OCT Segmentation')
 
@@ -76,10 +76,10 @@ cfg_file_name = os.path.basename(opt.cfg)
 cfg = update_config(opt.cfg)
 
 cfg['FILE_NAME'] = cfg_file_name
-opt.world_size = cfg.TRAIN.WORLD_SIZE
 opt.work_dir = './exp/{}-{}/'.format(opt.exp_id, cfg_file_name)
 opt.gpus = [i for i in range(torch.cuda.device_count())]
 opt.device = torch.device("cuda:" + str(opt.gpus[0]) if opt.gpus[0] >= 0 else "cpu")
+opt.log = True
 
 if not os.path.exists("./exp/{}-{}".format(opt.exp_id, cfg_file_name)):
     os.makedirs("./exp/{}-{}".format(opt.exp_id, cfg_file_name), exist_ok=True)

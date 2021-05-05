@@ -12,8 +12,9 @@ import torch.utils.data
 from utils.opt import cfg, logger, opt
 from utils.metrics import NullWriter
 from trainer import train, validate
-from model.fcoct import fcoct
+from model.fcoct import FCOCT
 from utils.dataset import Hc
+from model.criterion import SummaryLoss
 from tensorboardX import SummaryWriter
 
 def _init_fn(worker_id):
@@ -56,15 +57,17 @@ def main():
     logger.info('******************************')
 
     # Model Initialize
-    m = FCOCT()
-	m._initialize()
+    m = FCOCT(opt, cfg)
+    # m._initialize()
 
     m.cuda()
 
-    criterion = SummaryLoss.cuda()
+    criterion = SummaryLoss().cuda()
+    
+    torch.autograd.set_detect_anomaly(True)
 
     if cfg.TRAIN.OPTIMIZER == 'adam':
-        optimizer = torch.optim.Adam(m.parameters(), lr=cfg.TRAIN.LR)
+        optimizer = torch.optim.Adam(m.parameters(), lr=cfg.TRAIN.LR, weight_decay=cfg.TRAIN.LR_WEIGHT_DECAY)
     elif cfg.TRAIN.OPTIMIZER == 'rmsprop':
         optimizer = torch.optim.RMSprop(m.parameters(), lr=cfg.TRAIN.LR)
 
@@ -76,23 +79,23 @@ def main():
     else:
         writer = None
 
-    train_dataset = Hc(cfg.TRAIN, train=True)
+    train_dataset = Hc(cfg.DATASET.TRAIN, train=True)
     
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=(train_sampler is None), worker_init_fn=_init_fn)
+        train_dataset, batch_size=cfg.TRAIN.BATCH_SIZE, worker_init_fn=_init_fn)
 
     opt.trainIters = 0
     best_err = 999
 
     for i in range(cfg.TRAIN.BEGIN_EPOCH, cfg.TRAIN.END_EPOCH):
         opt.epoch = i
-        train_sampler.set_epoch(i)
         current_lr = optimizer.state_dict()['param_groups'][0]['lr']
 
         logger.info(f'############# Starting Epoch {opt.epoch} | LR: {current_lr} #############')
 
         # Training
-        loss, acc = train(opt, cfg, train_loader, m, criterion, optimizer, writer)
+        loss = train(opt, cfg, train_loader, m, criterion, optimizer, writer)
+        acc = 0
         logger.epochInfo('Train', opt.epoch, loss, acc)
 
         lr_scheduler.step()
@@ -100,15 +103,14 @@ def main():
         if (i + 1) % opt.snapshot == 0:
             # Save checkpoint
             if opt.log:
-                torch.save(m.module.state_dict(), './exp/{}-{}/model_{}.pth'.format(opt.exp_id, cfg.FILE_NAME, opt.epoch))
-            # TODO: Prediction Test
-            # with torch.no_grad():
-			# 	err = validate(m, opt, cfg)
-			# 	if opt.log and err <= best_err:
-			# 		best_err = err
-			# 		torch.save(m.module.state_dict(), './exp/{}-{}/best_model.pth'.format(opt.exp_id, cfg.FILE_NAME))
+                torch.save(m.state_dict(), './exp/{}-{}/model_{}.pth'.format(opt.exp_id, cfg.FILE_NAME, opt.epoch))
+            with torch.no_grad():
+                err = validate(m, opt, cfg)
+                if opt.log and err <= best_err:
+                    best_err = err
+                    torch.save(m.state_dict(), './exp/{}-{}/best_model.pth'.format(opt.exp_id, cfg.FILE_NAME))
 
-			# 	logger.info(f'##### Epoch {opt.epoch} | gt results: {err}/{best_err} #####')
+            logger.info(f'##### Epoch {opt.epoch} | gt results: {err}/{best_err} #####')
 
 if __name__ == "__main__":
     main()

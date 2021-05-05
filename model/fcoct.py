@@ -8,7 +8,7 @@ from model.layers.topology import TopologyModule
 
 from easydict import EasyDict
 
-class FCOCT(nn.modules):
+class FCOCT(nn.Module):
 	def __init__(self, opt, cfg):
 		super(FCOCT, self).__init__()
 		self.opt = opt
@@ -20,28 +20,28 @@ class FCOCT(nn.modules):
 		)
 		self.conv2 = nn.Sequential(
 			ResBlock(64, 32),
-			nn.Conv2d(32, 9, kernel_size=1)
+			nn.Conv2d(32, cfg.DATA_PRESET.NUM_SURFACE, kernel_size=1)
 		)
 		self.channel_softmax = nn.Softmax(dim=1)
-		self.column_softmax = nn.Softmax(dim=3)
+		self.column_softmax = nn.Softmax(dim=2)
 		
 		self.soft_argmax = SoftArgmax()
 		self.topo = TopologyModule()
 	
 	def forward(self, x):
 		feature = self.res_unet(x)
-		c1 = self.conv1(feature)
+		# c1 = self.conv1(feature)
 		c2 = self.conv2(feature)
 		
-		layer_maps = self.channel_softmax(c1)
+		# layer_maps = self.channel_softmax(c1)
 		surface_maps = self.column_softmax(c2)
 		
 		surface_positions = self.soft_argmax(surface_maps)
 		final_surfaces = self.topo(surface_positions)
 		
 		return EasyDict(
-			layer_maps=layer_maps,
-			surface_maps=surface_maps,
+			# layer_maps=layer_maps,
+			surface_maps=c2,
 			final_surfaces=final_surfaces,
 		)
 		

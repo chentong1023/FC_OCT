@@ -5,11 +5,17 @@ def DiceCELoss(output, label, weight):
 	# TODO: to generate a mask map
 	pass
 
-def CELoss(output, label):
-	pass
+def CELoss(output, label, weight):
+	# (B, C, M, N) , (B, C, N)
+	out2 = output * weight.unsqueeze(2).expand_as(output)
+	out = out2.permute(0, 2, 1, 3)
+	cel = nn.CrossEntropyLoss()
+	return cel(out, label)
 
-def L1Loss(output, label):
-	pass
+def L1Loss(output, label, weight):
+	out = output * weight
+	SmoothL1 = nn.SmoothL1Loss(size_average=True)
+	return SmoothL1(output, label)
 
 
 class SummaryLoss(nn.Module):
@@ -17,10 +23,16 @@ class SummaryLoss(nn.Module):
 		super(SummaryLoss, self).__init__()
 	
 	def forward(self, output, labels):
-		layer_maps = output.layer_maps
+		# layer_maps = output.layer_maps
 		surface_maps = output.surface_maps
 		final_surfaces = output.final_surfaces
+		device = surface_maps.device
 		# L_DiceCe = DiceCELoss(layer_maps, labels['mask'])
-		L_Ce = CELoss(surface_maps, labels['bds'])
-		L_l1 = L1Loss(final_surfaces, labels['bds'])
-		return L_Ce + L_l1
+		L_Ce = CELoss(surface_maps,
+					labels['bds_int'].cuda().detach(),
+					labels['weight'].cuda().detach())
+		L_l1 = L1Loss(final_surfaces,
+					labels['bds'].cuda().detach(),
+					labels['weight'].cuda().detach())
+		
+		return L_Ce + L_l1, L_Ce, L_l1

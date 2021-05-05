@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from model.modules import ResBlock
+from model.layers.modules import ResBlock
 
 class ResUnet(nn.Module):
 	def __init__(self, channel=3, filter=[64, 128]):
