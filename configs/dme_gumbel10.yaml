@@ -12,7 +12,10 @@ DATASET:
     ROOT: './data/dme/'
     ANN: 'label/test.json'
 DATA_PRESET:
-  NORM_TYPE: 'softmax'
+  NORM_TYPE: 'gumbel_softmax'
+  GUMBEL:
+    TAU: 1
+    NUM_ITER: 1
   IMAGE_SIZE:
   - 224
   - 768

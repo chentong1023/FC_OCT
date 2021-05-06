@@ -74,7 +74,7 @@ def validate(m, opt, cfg, batch_size=2, test=False):
 		gt_surface = labels['bds']
 		gt_weight = labels['weight']
 		
-		mad = torch.abs(((oup_surface - gt_surface) * gt_weight).mean())
+		mad = (torch.abs(oup_surface - gt_surface) * gt_weight).sum() / gt_weight.sum()
 		mads.append(mad)
 	
 	return sum(mads) / len(mads)

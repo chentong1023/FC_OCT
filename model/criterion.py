@@ -6,16 +6,29 @@ def DiceCELoss(output, label, weight):
 	pass
 
 def CELoss(output, label, weight):
-	# (B, C, M, N) , (B, C, N)
-	out2 = output * weight.unsqueeze(2).expand_as(output)
-	out = out2.permute(0, 2, 1, 3)
-	cel = nn.CrossEntropyLoss()
-	return cel(out, label)
+	if output.dim() == 4:
+		# (B, C, M, N) , (B, C, N)
+		out2 = output * weight.unsqueeze(2).expand_as(output)
+		out = out2.permute(0, 2, 1, 3)
+		cel = nn.CrossEntropyLoss()
+		return cel(out, label)
+	else:
+		raise TypeError
 
 def L1Loss(output, label, weight):
-	out = output * weight
-	SmoothL1 = nn.SmoothL1Loss(size_average=True)
-	return SmoothL1(output, label)
+	if output.dim() == 3:
+		# (B, C, N)
+		out = output * weight
+		SmoothL1 = nn.SmoothL1Loss(size_average=True)
+		return SmoothL1(out, label)
+	elif output.dim() == 4:
+		# (B, C, N, A)
+		out = output * weight.unsqueeze(3).expand_as(output)
+		lbl = label.unsqueeze(3).expand_as(out)
+		SmoothL1 = nn.SmoothL1Loss(size_average=True)
+		return SmoothL1(out, lbl)
+	else:
+		raise TypeError
 
 
 class SummaryLoss(nn.Module):

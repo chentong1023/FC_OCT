@@ -12,7 +12,10 @@ DATASET:
     ROOT: './data/hc/'
     ANN: 'label/test.json'
 DATA_PRESET:
-  NORM_TYPE: 'softmax'
+  NORM_TYPE: 'gumbel_softmax'
+  GUMBEL:
+    TAU: 1
+    NUM_ITER: 10
   IMAGE_SIZE:
   - 128
   - 1024

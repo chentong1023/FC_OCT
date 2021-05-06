@@ -5,6 +5,7 @@ from model.layers.modules import ResBlock
 from model.layers.resunet import ResUnet
 from model.layers.softargmax import SoftArgmax
 from model.layers.topology import TopologyModule
+from model.layers.gumbel_softmax import Gumbel_Softmax
 
 from easydict import EasyDict
 
@@ -23,7 +24,12 @@ class FCOCT(nn.Module):
 			nn.Conv2d(32, cfg.DATA_PRESET.NUM_SURFACE, kernel_size=1)
 		)
 		self.channel_softmax = nn.Softmax(dim=1)
-		self.column_softmax = nn.Softmax(dim=2)
+		if cfg.DATA_PRESET.NORM_TYPE == 'softmax':
+			self.column_softmax = nn.Softmax(dim=2)
+		elif cfg.DATA_PRESET.NORM_TYPE == 'gumbel_softmax':
+			self.column_softmax = Gumbel_Softmax(dim=2, tau=cfg.DATA_PRESET.GUMBEL.TAU, num_iter=cfg.DATA_PRESET.GUMBEL.NUM_ITER)
+		else:
+			raise NotImplementedError
 		
 		self.soft_argmax = SoftArgmax()
 		self.topo = TopologyModule()
