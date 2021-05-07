@@ -16,7 +16,7 @@ class Hc(data.Dataset):
 		
 		self._train = train
 	
-	def _transform(self, img, bds, mask):
+	def _transform(self, img, bds, mask, idx):
 		# TODO: augument the data by horizontal flipping and vertical scaling
 		C, N = bds.shape
 		bds_int = np.floor(bds)
@@ -33,6 +33,7 @@ class Hc(data.Dataset):
 		bds = bds * weight
 		return {
 			'img': img,
+			'img_idx': idx,
 			'bds': bds,
 			'mask': mask,
 			'bds_int': bds_int,
@@ -52,7 +53,7 @@ class Hc(data.Dataset):
 		bds = np.array(item['bds'], dtype=np.float32) + 1
 		mask = np.array(item['mask'], dtype=np.float32)
 		
-		target = self._transform(img, bds, mask)
+		target = self._transform(img, bds, mask, idx)
 		return inp, target
 	
 	def __len__(self):

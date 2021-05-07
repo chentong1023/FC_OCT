@@ -13,10 +13,10 @@ class Gumbel_Softmax(nn.Module):
 			if self.num_iter > 1:
 				tx = x.unsqueeze(4).repeat((1,1,1,1,self.num_iter))
 				noise = -torch.log(-torch.log(torch.rand(tx.shape).cuda()))
-				hm_gumbel = (tx + noise) / self.tau
+				hm_gumbel = tx + noise / self.tau
 			else:
 				noise = -torch.log(-torch.log(torch.rand(x.shape).cuda()))
-				hm_gumbel = (x + noise) / self.tau
+				hm_gumbel = x + noise / self.tau
 		else:
 			hm_gumbel = x
 		return self.softmax(hm_gumbel)
