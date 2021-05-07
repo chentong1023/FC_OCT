@@ -7,7 +7,8 @@ import scipy.misc
 import torch.utils.data as data
 
 class Hc(data.Dataset):
-	def __init__(self, cfg, train=True):
+	def __init__(self, cfg, train):
+		self.cfg = cfg
 		self.root_path = cfg.ROOT
 		self.ann_path = os.path.join(self.root_path, cfg.ANN)
 		
@@ -18,8 +19,19 @@ class Hc(data.Dataset):
 	
 	def _transform(self, img, bds, mask, idx):
 		# TODO: augument the data by horizontal flipping and vertical scaling
+		if self._train:
+			img_size = img.shape
+			if self.cfg.AUG.FLIP and np.random.random() > 0.5:
+				img = cv2.flip(img, 1)
+				bds = np.flip(bds, 1)
+			sf = self.cfg.AUG.SCALE_FACTOR
+			scale = np.clip(np.random.randn() * sf + 1, 1 - sf, 1 + sf)
+			(h, w) = img_size
+			M = np.float32([[1, 0, 0], [0, scale, 0]])
+			img = cv2.warpAffine(img, M, (w, h))
+			bds = bds * scale
 		C, N = bds.shape
-		bds_int = np.floor(bds)
+		bds_int = np.clip(np.round(bds), 0, img.shape[0] - 1)
 		weight = np.zeros(N)
 		for i in range(N):
 			flag = True
@@ -44,16 +56,16 @@ class Hc(data.Dataset):
 		item = self._lists[idx]
 		img_path = os.path.join(self.root_path, 'image/' + item['image_name'])
 		img = scipy.misc.imread(img_path)
+		bds = np.array(item['bds'], dtype=np.float32) + 1
+		mask = np.array(item['mask'], dtype=np.float32)
+		
+		target = self._transform(img, bds, mask, idx)
 		N, M = img.shape
 		img = torch.from_numpy(img)
 		xaxis = torch.arange(N, dtype=torch.uint8).unsqueeze(1).expand_as(img)
 		yaxis = torch.arange(M, dtype=torch.uint8).expand_as(img)
 		inp = torch.cat((img.unsqueeze(0), xaxis.unsqueeze(0), yaxis.unsqueeze(0)), dim=0).type(torch.float32)
 		
-		bds = np.array(item['bds'], dtype=np.float32) + 1
-		mask = np.array(item['mask'], dtype=np.float32)
-		
-		target = self._transform(img, bds, mask, idx)
 		return inp, target
 	
 	def __len__(self):
