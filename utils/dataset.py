@@ -24,12 +24,14 @@ class Hc(data.Dataset):
 			if self.cfg.AUG.FLIP and np.random.random() > 0.5:
 				img = cv2.flip(img, 1)
 				bds = np.flip(bds, 1)
-			sf = self.cfg.AUG.SCALE_FACTOR
-			scale = np.clip(np.random.randn() * sf + 1, 1 - sf, 1 + sf)
-			(h, w) = img_size
-			M = np.float32([[1, 0, 0], [0, scale, 0]])
-			img = cv2.warpAffine(img, M, (w, h))
-			bds = bds * scale
+			
+			if self.cfg.AUG.SCALE:
+				sf = self.cfg.AUG.SCALE_FACTOR
+				scale = np.clip(np.random.randn() * sf + 1, 1 - sf, 1)
+				(h, w) = img_size
+				M = np.float32([[1, 0, 0], [0, scale, 0]])
+				img = cv2.warpAffine(img, M, (w, h))
+				bds = bds * scale
 		C, N = bds.shape
 		bds_int = np.clip(np.round(bds), 0, img.shape[0] - 1)
 		weight = np.zeros(N)

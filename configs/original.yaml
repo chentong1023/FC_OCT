@@ -4,7 +4,8 @@ DATASET:
     ROOT: './data/hc/'
     ANN: 'label/train.json'
     AUG:
-      FLIP: true
+      FLIP: false
+      SCALE: false
       SCALE_FACTOR: 0.3
   VAL:
     TYPE: 'hc'
