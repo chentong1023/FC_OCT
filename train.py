@@ -62,7 +62,7 @@ def main():
 
     m.cuda()
 
-    criterion = SummaryLoss().cuda()
+    criterion = SummaryLoss(alpha=cfg.DATA_PRESET.LOSS_ALPHA).cuda()
     
     torch.autograd.set_detect_anomaly(True)
 
@@ -82,7 +82,7 @@ def main():
     train_dataset = Hc(cfg.DATASET.TRAIN, train=True)
     
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=cfg.TRAIN.BATCH_SIZE, worker_init_fn=_init_fn)
+        train_dataset, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=True, worker_init_fn=_init_fn)
 
     opt.trainIters = 0
     best_err = 999

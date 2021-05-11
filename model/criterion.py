@@ -32,8 +32,9 @@ def L1Loss(output, label, weight):
 
 
 class SummaryLoss(nn.Module):
-	def __init__(self):
+	def __init__(self, alpha = 1):
 		super(SummaryLoss, self).__init__()
+		self.alpha = alpha
 	
 	def forward(self, output, labels):
 		# layer_maps = output.layer_maps
@@ -48,4 +49,4 @@ class SummaryLoss(nn.Module):
 					labels['bds'].cuda().detach(),
 					labels['weight'].cuda().detach())
 		
-		return L_Ce + L_l1, L_Ce, L_l1
+		return self.alpha * L_Ce + L_l1, L_Ce, L_l1

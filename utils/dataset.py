@@ -21,9 +21,10 @@ class Hc(data.Dataset):
 		# TODO: augument the data by horizontal flipping and vertical scaling
 		if self._train:
 			img_size = img.shape
-			if self.cfg.AUG.FLIP and np.random.random() > 0.5:
-				img = cv2.flip(img, 1)
-				bds = np.flip(bds, 1)
+			if self.cfg.AUG.FLIP:
+				if np.random.random() > 0.5:
+					img = cv2.flip(img, 1)
+					bds = np.flip(bds, 1)
 			
 			if self.cfg.AUG.SCALE:
 				sf = self.cfg.AUG.SCALE_FACTOR
@@ -33,12 +34,13 @@ class Hc(data.Dataset):
 				img = cv2.warpAffine(img, M, (w, h))
 				bds = bds * scale
 		C, N = bds.shape
+		M = img.shape[0]
 		bds_int = np.clip(np.round(bds), 0, img.shape[0] - 1)
 		weight = np.zeros(N)
 		for i in range(N):
 			flag = True
 			for j in range(C):
-				flag &= not np.isnan(bds[j,i])
+				flag &= (not np.isnan(bds[j,i])) and (bds[j,i] >= 0) and (bds[j, i] <= M - 1)
 			weight[i] = 1 if flag else 0
 		bds = np.nan_to_num(bds)
 		bds_int = torch.from_numpy(bds_int).type(torch.long)
@@ -63,10 +65,10 @@ class Hc(data.Dataset):
 		
 		target = self._transform(img, bds, mask, idx)
 		N, M = img.shape
-		img = torch.from_numpy(img)
-		xaxis = torch.arange(N, dtype=torch.uint8).unsqueeze(1).expand_as(img)
-		yaxis = torch.arange(M, dtype=torch.uint8).expand_as(img)
-		inp = torch.cat((img.unsqueeze(0), xaxis.unsqueeze(0), yaxis.unsqueeze(0)), dim=0).type(torch.float32)
+		img = torch.from_numpy(img).type(torch.float32)
+		xaxis = torch.arange(N, dtype=torch.float32).unsqueeze(1).expand_as(img) / N
+		yaxis = torch.arange(M, dtype=torch.float32).expand_as(img) / M
+		inp = torch.cat([img.unsqueeze(0), xaxis.unsqueeze(0), yaxis.unsqueeze(0)], dim=0)
 		
 		return inp, target
 	

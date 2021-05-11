@@ -9,6 +9,10 @@ from torch.utils.data.dataloader import DataLoader
 from utils.metrics import DataLogger
 from utils.dataset import Hc
 
+def _init_fn(worker_id):
+    np.random.seed(opt.seed)
+    random.seed(opt.seed)
+
 def train(opt, cfg, train_loader, m, criterion, optimizer, writer):
 	loss_logger = DataLogger()
 	loss_ce_logger = DataLogger()
@@ -22,7 +26,6 @@ def train(opt, cfg, train_loader, m, criterion, optimizer, writer):
 		inps = inps.cuda()
 		
 		output = m(inps)
-		
 		
 		loss, loss_ce, loss_l1 = criterion(output, labels)
 		
@@ -57,7 +60,7 @@ def validate(m, opt, cfg, batch_size=2, test=False):
 	else:
 		valid_dataset = Hc(cfg.DATASET.VAL, train=False)
 	valid_loader = torch.utils.data.DataLoader(
-		valid_dataset, batch_size=batch_size,shuffle=False,drop_last=False
+		valid_dataset, batch_size=batch_size,shuffle=False,drop_last=False, worker_init_fn=_init_fn
 	)
 	m.eval()
 	
