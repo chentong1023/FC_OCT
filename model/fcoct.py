@@ -30,8 +30,10 @@ class FCOCT(nn.Module):
 			self.column_softmax = Gumbel_Softmax(dim=2, tau=cfg.DATA_PRESET.GUMBEL.TAU, num_iter=cfg.DATA_PRESET.GUMBEL.NUM_ITER)
 		else:
 			raise NotImplementedError
-		
-		self.soft_argmax = SoftArgmax()
+		if cfg.DATA_PRESET.NORM_TYPE == 'softmax':
+			self.soft_argmax = SoftArgmax()
+		elif cfg.DATA_PRESET.NORM_TYPE == 'gumbel_softmax':
+			self.soft_argmax = SoftArgmax(cfg.DATA_PRESET.GUMBEL.INDX_SAMPLE)
 		self.topo = TopologyModule()
 	
 	def forward(self, x):
