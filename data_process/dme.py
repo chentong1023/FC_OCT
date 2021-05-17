@@ -25,7 +25,7 @@ def json_output(indxs, json_name):
 	with open(json_path, 'w') as f:
 		f.write(json.dumps(data))
 
-root_path_name = '/Disk1/dataset/OCT/data/dme/'
+root_path_name = './data/dme/'
 
 label_path = os.path.join(root_path_name, 'label/')
 image_path = os.path.join(root_path_name, 'image/')

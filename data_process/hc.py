@@ -2,7 +2,7 @@ import os
 import json
 import numpy as np
 
-root_path_name = '/Disk1/dataset/OCT/data/hc/'
+root_path_name = './data/hc/'
 
 label_path = os.path.join(root_path_name, 'label/')
 image_path = os.path.join(root_path_name, 'image/')
@@ -25,7 +25,7 @@ def json_output(indxs, json_name):
 			with open(fpath, 'r') as f:
 				dicts = json.loads(f.read())
 			bds = dicts['bds']
-			mask = dicts['lesion']
+			mask = None
 			ann = {
 				'image_name' : filename + '.png',
 				'bds' : bds,

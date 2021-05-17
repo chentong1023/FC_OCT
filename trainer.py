@@ -69,15 +69,30 @@ def validate(m, opt, cfg, batch_size=2, test=False):
 	
 	mads = []
 	
+	err = None
+	
 	for i, (inps, labels) in enumerate(valid_loader):
 		inps = inps.cuda()
 		output = m(inps)
 		
-		oup_surface = output.final_surfaces.cpu()
+		oup_surface = output.final_surfaces.detach().cpu()
 		gt_surface = labels['bds']
 		gt_weight = labels['weight']
 		
 		mad = (torch.abs(oup_surface - gt_surface) * gt_weight).sum() / gt_weight.sum()
+		
+		if err == None:
+			err = ((oup_surface - gt_surface) * gt_weight) / gt_weight.sum()
+		else:
+			err = torch.cat([err, ((oup_surface - gt_surface) * gt_weight) / gt_weight.sum()], dim=0)
+		
 		mads.append(mad)
 	
-	return sum(mads) / len(mads)
+	err = err.reshape(err.shape[0], -1)
+	mean = torch.sum(err, dim=1, keepdim=True)
+	std = torch.mean(torch.sqrt(torch.mean((err - mean) ** 2, dim=1)))
+	
+	if test == True:
+		return sum(mads) / len(mads), std
+	else:
+		return sum(mads) / len(mads)

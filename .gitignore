@@ -3,3 +3,5 @@ __pycache__
 .tensorboard/
 .vscode/
 eval/
+data
+exp

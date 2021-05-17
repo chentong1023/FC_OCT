@@ -63,9 +63,9 @@ def main():
     m.cuda()
 
     with torch.no_grad():
-        err = validate(m, opt, cfg, test=True)
+        err, std = validate(m, opt, cfg, test=True)
         if opt.log:
-            logger.info(f'##### gt results: {err} #####')
+            logger.info(f'##### gt results: {err} std: {std} #####')
 
 
 if __name__ == "__main__":
