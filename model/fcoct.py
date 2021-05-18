@@ -50,6 +50,7 @@ class FCOCT(nn.Module):
 		return EasyDict(
 			# layer_maps=layer_maps,
 			surface_maps=c2,
+			heatmaps=surface_maps,
 			final_surfaces=final_surfaces,
 		)
 		

@@ -3,6 +3,10 @@ DATASET:
     TYPE: 'dme'
     ROOT: './data/dme/'
     ANN: 'label/train.json'
+    AUG:
+      FLIP: False
+      SCALE: False
+      SCALE_FACTOR: 0.3
   VAL:
     TYPE: 'dme'
     ROOT: './data/dme/'
@@ -17,6 +21,7 @@ DATA_PRESET:
   - 224
   - 768
   NUM_SURFACE: 8
+  LOSS_ALPHA: 0
 TRAIN:
   BATCH_SIZE: 2
   BEGIN_EPOCH: 0

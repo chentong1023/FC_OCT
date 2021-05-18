@@ -1,38 +1,39 @@
 DATASET:
   TRAIN:
-    TYPE: 'hc'
-    ROOT: './data/hc/'
+    TYPE: 'dme'
+    ROOT: './data/dme/'
     ANN: 'label/train.json'
     AUG:
-      FLIP: True
+      FLIP: false
       SCALE: false
       SCALE_FACTOR: 0.3
   VAL:
-    TYPE: 'hc'
-    ROOT: './data/hc/'
-    ANN: 'label/valid.json'
+    TYPE: 'dme'
+    ROOT: './data/dme/'
+    ANN: 'label/train.json'
   TEST:
-    TYPE: 'hc'
-    ROOT: './data/hc/'
+    TYPE: 'dme'
+    ROOT: './data/dme/'
     ANN: 'label/test.json'
 DATA_PRESET:
   NORM_TYPE: 'gumbel_softmax'
   GUMBEL:
     TAU: 2
-    NUM_ITER: 30
+    NUM_ITER: 10
+    INDX_SAMPLE: 'triangle'
   IMAGE_SIZE:
-  - 128
-  - 1024
-  NUM_SURFACE: 9
-  LOSS_ALPHA: 1
+  - 224
+  - 768
+  NUM_SURFACE: 8
+  LOSS_ALPHA: 0
 TRAIN:
   BATCH_SIZE: 2
   BEGIN_EPOCH: 0
-  END_EPOCH: 40
+  END_EPOCH: 100
   OPTIMIZER: 'adam'
   LR: 0.0001
   LR_WEIGHT_DECAY: 0.0001
   LR_FACTOR: 0.1
   LR_STEP:
-  - 10
-  - 40
+  - 50
+  - 100

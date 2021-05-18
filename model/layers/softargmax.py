@@ -27,9 +27,13 @@ class SoftArgmax(nn.Module):
 		elif self.sample_type == 'uniform':
 			eps_x = torch.rand_like(w_x) - 0.5
 			coord_x = x * (w_x + eps_x)
-		elif self.sample_type == 'guassian':
+		elif self.sample_type == 'gaussian':
 			eps_x = torch.randn_like(w_x)
-			coord_x = x * (w_x + eps_x)
+			sigma = 1
+			gaussian_p_x = torch.exp(- eps_x ** 2 / (2 * sigma ** 2))
+			hm_x = x * gaussian_p_x
+			hm_x = hm_x / hm_x.sum(dim=2, keepdim=True)
+			coord_x = hm_x * (w_x + eps_x)
 		elif self.sample_type == 'triangle':
 			eps_x, _ = uni2tri(torch.rand_like(w_x))
 			w_x = w_x + eps_x

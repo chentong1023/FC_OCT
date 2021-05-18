@@ -30,6 +30,87 @@ def L1Loss(output, label, weight):
 	else:
 		raise TypeError
 
+class L1JointRegressionVar(nn.Module):
+	''' L1 Joint Regression Loss
+	'''
+	def __init__(self, OUTPUT_3D=False, size_average=True):
+		super(L1JointRegressionVar, self).__init__()
+		self.size_average = size_average
+		self.gt_sigma = 2
+		self.gamma = 1
+
+	def forward(self, output, labels):
+		surface_maps = output.surface_maps # (B, C, M, N)
+		hm = output.heatmaps # (B, C, M, N)
+		final_surfaces = output.final_surfaces # (B, C, N)
+		device = surface_maps.device
+		gt_bds = labels['bds'].cuda().detach()
+		gt_bds_weight = labels['weight'].cuda().detach()
+		
+
+		w_x = torch.arange(hm.shape[2], dtype=torch.float32, device=device)  / hm.shape[2] - 0.5
+		w_x = w_x.unsqueeze(1).expand_as(hm)
+
+		var_x = (w_x - (final_surfaces.unsqueeze(2).expand_as(w_x) / hm.shape[2] - 0.5)) ** 2
+		var_x = (hm * var_x).mean(dim=2)
+
+		gt_var_x = self.gt_sigma ** 2 / ((hm.shape[2]) ** 2)
+
+		loss_var = torch.mean((var_x - gt_var_x) ** 2 * gt_bds_weight)
+
+		L_l1 = L1Loss(final_surfaces,
+					gt_bds,
+					gt_bds_weight)
+
+		loss = l1_loss + loss_var * self.gamma
+		return loss
+
+class L1JointRegressionJS(nn.Module):
+	''' L1 Joint Regression Loss
+	'''
+	def __init__(self, OUTPUT_3D=False, size_average=True):
+		super(L1JointRegressionJS, self).__init__()
+		self.size_average = size_average
+		self.gt_sigma = 2
+		self.gamma = 0.1
+		self.k = math.sqrt(2 * math.pi)
+
+	def _kl(self, p, q):
+		kl = p * (torch.log(p + 1e-9) - torch.log(q + 1e-9))
+		return kl.sum(dim=2, keepdim=False)
+
+	def _js(self, p, q):
+		m = 0.5 * (p + q)
+		return 0.5 * self._kl(p, m) + 0.5 * self._kl(q, m)
+
+	def forward(self, output, labels):
+		
+		surface_maps = output.surface_maps # (B, C, M, N)
+		hm = output.heatmaps # (B, C, M, N)
+		final_surfaces = output.final_surfaces # (B, C, N)
+		device = surface_maps.device
+		gt_bds = labels['bds'].cuda().detach()
+		gt_bds_weight = labels['weight'].cuda().detach()
+		
+
+		w_x = torch.arange(hm.shape[2], dtype=torch.float32, device=device)  / hm.shape[2] - 0.5
+		w_x = w_x.unsqueeze(1).expand_as(hm)
+
+		dist_x = (w_x - (final_surfaces.unsqueeze(2).expand_as(w_x) / hm.shape[2] - 0.5)) ** 2
+		std_x = self.gt_sigma / hm.shape[2]
+
+		gt_var_x = self.gt_sigma ** 2 / ((hm.shape[2]) ** 2)
+		gs_x = torch.exp(- dist_x / (2 * (std_x ** 2))) #/ (self.gt_sigma * self.k)
+
+		loss_reg = (self._js(hm, gs_x) * gt_bds_weight).mean()
+
+		L_l1 = L1Loss(final_surfaces,
+					gt_bds,
+					gt_bds_weight)
+
+		loss = l1_loss + loss_reg * self.gamma
+		return loss
+
 
 class SummaryLoss(nn.Module):
 	def __init__(self, alpha = 1):

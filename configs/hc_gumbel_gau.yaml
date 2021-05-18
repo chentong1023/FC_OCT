@@ -20,12 +20,12 @@ DATA_PRESET:
   GUMBEL:
     TAU: 2
     NUM_ITER: 30
-    INDX_SAMPLE: 'soft-argmax'
+    INDX_SAMPLE: 'gaussian'
   IMAGE_SIZE:
   - 128
   - 1024
   NUM_SURFACE: 9
-  LOSS_ALPHA: 0.5
+  LOSS_ALPHA: 0
 TRAIN:
   BATCH_SIZE: 2
   BEGIN_EPOCH: 0
