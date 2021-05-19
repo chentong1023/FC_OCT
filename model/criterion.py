@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import math
 
 def DiceCELoss(output, label, weight):
 	# TODO: to generate a mask map
@@ -33,11 +34,11 @@ def L1Loss(output, label, weight):
 class L1JointRegressionVar(nn.Module):
 	''' L1 Joint Regression Loss
 	'''
-	def __init__(self, OUTPUT_3D=False, size_average=True):
+	def __init__(self, alpha=1, size_average=True):
 		super(L1JointRegressionVar, self).__init__()
 		self.size_average = size_average
 		self.gt_sigma = 2
-		self.gamma = 1
+		self.alpha = alpha
 
 	def forward(self, output, labels):
 		surface_maps = output.surface_maps # (B, C, M, N)
@@ -52,27 +53,27 @@ class L1JointRegressionVar(nn.Module):
 		w_x = w_x.unsqueeze(1).expand_as(hm)
 
 		var_x = (w_x - (final_surfaces.unsqueeze(2).expand_as(w_x) / hm.shape[2] - 0.5)) ** 2
-		var_x = (hm * var_x).mean(dim=2)
+		var_x = (hm * var_x).sum(dim=2)
 
 		gt_var_x = self.gt_sigma ** 2 / ((hm.shape[2]) ** 2)
 
-		loss_var = torch.mean((var_x - gt_var_x) ** 2 * gt_bds_weight)
+		loss_var = torch.sum(((var_x - gt_var_x) ** 2) * gt_bds_weight) / gt_bds_weight.shape[0]
 
-		L_l1 = L1Loss(final_surfaces,
+		l1_loss = L1Loss(final_surfaces,
 					gt_bds,
 					gt_bds_weight)
 
-		loss = l1_loss + loss_var * self.gamma
-		return loss
+		loss = l1_loss + loss_var * self.alpha
+		return loss, loss_var, l1_loss
 
 class L1JointRegressionJS(nn.Module):
 	''' L1 Joint Regression Loss
 	'''
-	def __init__(self, OUTPUT_3D=False, size_average=True):
+	def __init__(self, alpha=1, size_average=True):
 		super(L1JointRegressionJS, self).__init__()
 		self.size_average = size_average
 		self.gt_sigma = 2
-		self.gamma = 0.1
+		self.alpha = alpha
 		self.k = math.sqrt(2 * math.pi)
 
 	def _kl(self, p, q):
@@ -104,12 +105,12 @@ class L1JointRegressionJS(nn.Module):
 
 		loss_reg = (self._js(hm, gs_x) * gt_bds_weight).mean()
 
-		L_l1 = L1Loss(final_surfaces,
+		l1_loss = L1Loss(final_surfaces,
 					gt_bds,
 					gt_bds_weight)
 
-		loss = l1_loss + loss_reg * self.gamma
-		return loss
+		loss = l1_loss + loss_reg * self.alpha
+		return loss, loss_reg, l1_loss
 
 
 class SummaryLoss(nn.Module):

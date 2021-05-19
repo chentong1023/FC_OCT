@@ -14,7 +14,7 @@ from utils.metrics import NullWriter
 from trainer import train, validate
 from model.fcoct import FCOCT
 from utils.dataset import Hc
-from model.criterion import SummaryLoss
+from model.criterion import SummaryLoss, L1JointRegressionJS, L1JointRegressionVar
 from tensorboardX import SummaryWriter
 
 def _init_fn(worker_id):
@@ -62,7 +62,14 @@ def main():
 
     m.cuda()
 
-    criterion = SummaryLoss(alpha=cfg.DATA_PRESET.LOSS_ALPHA).cuda()
+    if cfg.DATA_PRESET.LOSS == 'ce':
+        criterion = SummaryLoss(alpha=cfg.DATA_PRESET.LOSS_ALPHA).cuda()
+    elif cfg.DATA_PRESET.LOSS == 'var':
+        criterion = L1JointRegressionVar(alpha=cfg.DATA_PRESET.LOSS_ALPHA).cuda()
+    elif cfg.DATA_PRESET.LOSS == 'js':
+        criterion = L1JointRegressionJS(alpha=cfg.DATA_PRESET.LOSS_ALPHA).cuda()
+    else:
+        raise TypeError
     
     torch.autograd.set_detect_anomaly(True)
 

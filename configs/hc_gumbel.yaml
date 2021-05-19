@@ -25,6 +25,7 @@ DATA_PRESET:
   - 128
   - 1024
   NUM_SURFACE: 9
+  LOSS: 'ce'
   LOSS_ALPHA: 0
 TRAIN:
   BATCH_SIZE: 2
@@ -35,5 +36,5 @@ TRAIN:
   LR_WEIGHT_DECAY: 0.0001
   LR_FACTOR: 0.1
   LR_STEP:
-  - 10
+  - 30
   - 40

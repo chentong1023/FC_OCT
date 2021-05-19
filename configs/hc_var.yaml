@@ -4,8 +4,8 @@ DATASET:
     ROOT: './data/hc/'
     ANN: 'label/train.json'
     AUG:
-      FLIP: false
-      SCALE: false
+      FLIP: False
+      SCALE: False
       SCALE_FACTOR: 0.3
   VAL:
     TYPE: 'hc'
@@ -16,17 +16,13 @@ DATASET:
     ROOT: './data/hc/'
     ANN: 'label/test.json'
 DATA_PRESET:
-  NORM_TYPE: 'gumbel_softmax'
-  GUMBEL:
-    TAU: 2
-    NUM_ITER: 30
-    INDX_SAMPLE: 'gaussian'
+  NORM_TYPE: 'softmax'
   IMAGE_SIZE:
   - 128
   - 1024
   NUM_SURFACE: 9
-  LOSS: 'ce'
-  LOSS_ALPHA: 0
+  LOSS: 'var'
+  LOSS_ALPHA: 1
 TRAIN:
   BATCH_SIZE: 2
   BEGIN_EPOCH: 0
