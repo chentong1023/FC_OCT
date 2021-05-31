@@ -1,7 +1,3 @@
-# -----------------------------------------------------
-# Copyright (c) Shanghai Jiao Tong University. All rights reserved.
-# Written by Jiefeng Li (jeff.lee.sjtu@gmail.com)
-# -----------------------------------------------------
 import argparse
 import logging
 import os
@@ -29,8 +25,6 @@ parser.add_argument('--snapshot', default=2, type=int,
 
 parser.add_argument('--rank', default=-1, type=int,
                     help='node rank for distributed training')
-parser.add_argument('--dist-url', default='tcp://192.168.1.214:23345', type=str,
-                    help='url used to set up distributed training')
 parser.add_argument('--dist-backend', default='nccl', type=str,
                     help='distributed backend')
 parser.add_argument('--launcher', choices=['none', 'pytorch', 'slurm', 'mpi'], default='none',

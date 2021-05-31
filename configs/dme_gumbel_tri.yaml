@@ -18,8 +18,8 @@ DATASET:
 DATA_PRESET:
   NORM_TYPE: 'gumbel_softmax'
   GUMBEL:
-    TAU: 2
-    NUM_ITER: 10
+    TAU: 5
+    NUM_ITER: 30
     INDX_SAMPLE: 'triangle'
   IMAGE_SIZE:
   - 224
@@ -30,11 +30,11 @@ DATA_PRESET:
 TRAIN:
   BATCH_SIZE: 2
   BEGIN_EPOCH: 0
-  END_EPOCH: 100
+  END_EPOCH: 200
   OPTIMIZER: 'adam'
   LR: 0.0001
   LR_WEIGHT_DECAY: 0.0001
   LR_FACTOR: 0.1
   LR_STEP:
-  - 50
-  - 100
+  - 150
+  - 200

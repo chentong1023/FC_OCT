@@ -5,7 +5,7 @@ DATASET:
     ANN: 'label/train.json'
     AUG:
       FLIP: False
-      SCALE: false
+      SCALE: False
       SCALE_FACTOR: 0.3
   VAL:
     TYPE: 'hc'

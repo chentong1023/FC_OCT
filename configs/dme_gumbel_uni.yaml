@@ -4,8 +4,8 @@ DATASET:
     ROOT: './data/dme/'
     ANN: 'label/train.json'
     AUG:
-      FLIP: False
-      SCALE: False
+      FLIP: false
+      SCALE: false
       SCALE_FACTOR: 0.3
   VAL:
     TYPE: 'dme'
@@ -16,13 +16,17 @@ DATASET:
     ROOT: './data/dme/'
     ANN: 'label/test.json'
 DATA_PRESET:
-  NORM_TYPE: 'softmax'
+  NORM_TYPE: 'gumbel_softmax'
+  GUMBEL:
+    TAU: 5
+    NUM_ITER: 30
+    INDX_SAMPLE: 'uniform'
   IMAGE_SIZE:
   - 224
   - 768
   NUM_SURFACE: 8
-  LOSS: 'var'
-  LOSS_ALPHA: 1
+  LOSS: 'ce'
+  LOSS_ALPHA: 0
 TRAIN:
   BATCH_SIZE: 2
   BEGIN_EPOCH: 0
